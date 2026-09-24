@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow">
+<style>:root{color-scheme:light}html{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif;background:#fdfbf8}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Slo M'Ocean Farm's Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@400;500;600&family=Inter+Tight:wght@300;400;500;600&display=swap">
+<style>
+:root{
+  --navy:#0B1675; --ink:#141a3d; --ink-2:#4a5070; --muted:#6f7490;
+  --ground:#fdfbf8; --panel:#ffffff; --line:#e8e3dc; --haze:#fbeee0;
+  --sun:#C8741E; --load:#3D4DB8; --pink:#D8577A; --sea:#1E7F8C;
+  --good:#2f8a4f; --warn:#b7791f; --crit:#c0392b;
+  --sky-a:#f6c79a; --sky-b:#f3a86f; --sky-c:#e98a8a; --sea-band:#9fb6c9;
+  --shadow:0 1px 2px rgba(11,22,117,.06),0 8px 24px -12px rgba(11,22,117,.18);
+  --display:"Cormorant SC","Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --body:"Inter Tight",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --navy:#b9c2ff; --ink:#eef0fb; --ink-2:#b4b8d4; --muted:#9a9fbd;
+    --ground:#0b1030; --panel:#121842; --line:#232a5c; --haze:#1a1f4d;
+    --sun:#D6883A; --load:#7B88F0; --pink:#f08aa6; --sea:#5ec3cf;
+    --good:#5cc27f; --warn:#e3a94a; --crit:#ef6b5c;
+    --sky-a:#3a2a5c; --sky-b:#6b3a5e; --sky-c:#a4506a; --sea-band:#1c2a55;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --navy:#b9c2ff; --ink:#eef0fb; --ink-2:#b4b8d4; --muted:#9a9fbd;
+  --ground:#0b1030; --panel:#121842; --line:#232a5c; --haze:#1a1f4d;
+  --sun:#D6883A; --load:#7B88F0; --pink:#f08aa6; --sea:#5ec3cf;
+  --good:#5cc27f; --warn:#e3a94a; --crit:#ef6b5c;
+  --sky-a:#3a2a5c; --sky-b:#6b3a5e; --sky-c:#a4506a; --sea-band:#1c2a55;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:0 40px;font-variant-numeric:tabular-nums}
+.wrap{max-width:1240px;margin:0 auto;display:grid;gap:18px}
+h1,h2,h3{font-family:var(--display);font-weight:500;color:var(--navy);margin:0;text-wrap:balance;letter-spacing:.02em}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:500}
+
+/* ---------- top board ---------- */
+.hero{margin-inline:-16px;border-radius:0 0 24px 24px;padding:14px 20px 16px;display:grid;gap:12px;
+  background:linear-gradient(180deg,var(--sky-a) 0%,var(--sky-b) 40%,var(--sky-c) 64%,var(--sea-band) 100%)}
+.card{background:color-mix(in oklab,var(--panel) 86%,transparent);border:1px solid color-mix(in oklab,var(--line) 70%,transparent);border-radius:16px;box-shadow:var(--shadow);backdrop-filter:blur(6px);min-width:0}
+.topbar{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:stretch}
+.brand{align-self:center;min-width:0}
+.brand h1{font-size:clamp(26px,3.4vw,40px);line-height:1;color:var(--navy)}
+.brand p{margin:5px 0 8px;font-family:var(--display);font-size:clamp(14px,1.6vw,17px);color:var(--navy);letter-spacing:.08em}
+.status{display:inline-flex;align-items:center;gap:8px;background:color-mix(in oklab,var(--panel) 78%,transparent);padding:4px 11px;border-radius:999px;font-size:12px;color:var(--ink);border:1px solid color-mix(in oklab,var(--line) 70%,transparent)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.dot.live{background:var(--good);box-shadow:0 0 0 0 color-mix(in oklab,var(--good) 60%,transparent);animation:pulse 2s infinite}
+.dot.stale{background:var(--warn)} .dot.err{background:var(--crit)}
+@keyframes pulse{70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.tb-clock,.tb-eta{padding:9px 18px 10px;display:flex;flex-direction:column;justify-content:center;gap:1px}
+.clk-time{font-size:clamp(28px,3.4vw,38px);font-weight:600;line-height:1.05;color:var(--navy);white-space:nowrap}
+.clk-time small{font-size:.4em;font-weight:500;color:var(--muted);letter-spacing:.08em;margin-left:5px}
+.clk-date{font-size:13px;color:var(--ink-2);white-space:nowrap}
+.eta-time{font-size:clamp(28px,3.4vw,38px);font-weight:600;line-height:1.05;color:var(--navy);white-space:nowrap}
+.eta-sub{font-size:13px;color:var(--ink-2);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.pill.ok{color:var(--good)} .pill.warn{color:var(--warn)} .pill.bad{color:var(--crit)} .pill.mute{color:var(--muted)}
+
+.alertbar{padding:6px 14px;border-radius:14px;font-size:13.5px;color:var(--ink);background:color-mix(in srgb,var(--sea) 12%,var(--panel));border:1px solid color-mix(in srgb,var(--sea) 40%,var(--line))}
+.alertbar.ok{background:color-mix(in srgb,var(--good) 11%,var(--panel));border-color:color-mix(in srgb,var(--good) 40%,var(--line))}
+.alertbar.warn{background:color-mix(in srgb,var(--warn) 14%,var(--panel));border-color:color-mix(in srgb,var(--warn) 50%,var(--line))}
+.alertbar.bad{background:color-mix(in srgb,var(--crit) 14%,var(--panel));border-color:var(--crit)}
+.flowbar{padding:6px 14px 8px}
+.flowbar svg{max-width:540px;margin:0 auto;overflow:visible}
+.flow svg{width:100%;height:auto;display:block}
+.flow .n-title{font-size:12px;letter-spacing:.14em;text-transform:uppercase;fill:var(--muted);font-family:var(--body)}
+.flow .n-val{font-size:27px;fill:var(--ink);font-family:var(--body);font-weight:600}
+.flow .n-sub{font-size:13px;fill:var(--ink-2);font-family:var(--body)}
+.flow path.track{stroke:var(--line);stroke-width:5;fill:none;stroke-linecap:round}
+.flow path.flowing{fill:none;stroke-width:4;stroke-linecap:round;stroke-dasharray:2 12;animation:dash linear infinite}
+@keyframes dash{to{stroke-dashoffset:-56}}
+
+.now-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(0,1.05fr);gap:12px}
+.now-grid .card{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.card-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.k{font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.s{font-size:12.5px;color:var(--ink-2)}
+
+/* outdoor */
+.od-main{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.temp-big{font-family:var(--display);font-size:clamp(56px,6vw,76px);line-height:.95;color:var(--navy);font-weight:500}
+.temp-big sup{font-size:.36em;vertical-align:top;position:relative;top:.25em;margin-left:2px}
+.od-list{display:grid;gap:2px;font-size:14px;color:var(--ink-2);padding-bottom:6px}
+.od-list b{color:var(--ink);font-weight:600}
+.mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.mini .t{padding:8px 10px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.mini .t:nth-child(3n){border-right:0}
+.mini .t:nth-last-child(-n+3){border-bottom:0}
+.mini .v{font-size:17px;font-weight:600;color:var(--ink);white-space:nowrap}
+.mini .v small{font-size:11.5px;font-weight:400;color:var(--ink-2);margin-left:3px}
+.mini .s{font-size:11.5px}
+.chip{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;border:1px solid currentColor}
+.uv-low{color:var(--good)} .uv-mod{color:var(--warn)} .uv-high{color:var(--crit)}
+
+/* sun & sea */
+.arc-box svg{width:100%;height:auto;display:block;overflow:visible}
+.arc-label{font-size:13px;fill:var(--ink-2);font-family:var(--body);letter-spacing:.06em}
+.arc-day{font-size:24px;font-weight:600;fill:var(--ink);font-family:var(--body)}
+.arc-sub{font-size:12.5px;fill:var(--ink-2);font-family:var(--body)}
+.sea-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sea-tiles .t{border-top:1px solid var(--line);padding-top:8px;min-width:0}
+.sea-tiles .v{font-size:20px;font-weight:600;color:var(--ink);white-space:nowrap}
+
+/* moon & planting */
+.moon-head{display:flex;gap:12px;align-items:center}
+.moon-head svg{width:56px;height:56px;flex:none}
+.moon-name{font-size:19px;font-weight:600;color:var(--ink);line-height:1.15}
+.moon-sign{font-size:14px;color:var(--ink);display:flex;gap:6px;flex-wrap:wrap;align-items:baseline}
+.moon-sign .g{font-size:18px;color:var(--navy)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:13.5px}
+.kv dt{color:var(--muted);font-size:11px;letter-spacing:.1em;text-transform:uppercase;align-self:center}
+.kv dd{margin:0;color:var(--ink)}
+.plant{border-top:1px solid var(--line);padding-top:9px;display:grid;gap:5px}
+.plant-main{font-size:16px;font-weight:600;color:var(--ink)}
+.days{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.days .d{border:1px solid var(--line);border-radius:10px;padding:4px 6px;font-size:12px;line-height:1.25;min-width:0}
+.days .d b{display:block;font-weight:600;color:var(--ink)}
+.days .d span{color:var(--ink-2)}
+.days .d.rest{background:color-mix(in oklab,var(--warn) 12%,transparent)}
+
+/* sections below the board */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);min-width:0}
+.panel-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.panel-head h2{font-size:26px}
+.stamp{font-size:12px;color:var(--muted)}
+.grow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.grow .t{padding:14px;border-right:1px solid var(--line);min-width:0}
+.grow .t:last-child{border-right:0}
+.grow .v{font-size:20px;font-weight:600;color:var(--ink);margin-top:2px}
+.grow .s{margin-top:4px}
+.stack{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:18px}
+.sub-h{font-family:var(--display);font-weight:500;color:var(--navy);font-size:21px;margin:18px 0 10px}
+.rep-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.rep-chips .t{padding:10px 14px;border-right:1px solid var(--line);min-width:0}
+.rep-chips .t:last-child{border-right:0}
+.rep-chips .v{font-size:15px;font-weight:600;color:var(--ink);margin-top:2px}
+.rep-sum{margin-top:10px;font-size:14px;color:var(--ink);display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table.rt{width:100%;border-collapse:collapse;font-size:13.5px;min-width:520px}
+table.rt th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--haze)}
+table.rt td{padding:10px 12px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+table.rt tr:last-child td{border-bottom:0}
+table.rt td:first-child{font-weight:600;white-space:nowrap}
+table.rt tr.today td{background:color-mix(in oklab,var(--sun) 8%,transparent)}
+.fc{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.fday{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--panel);display:grid;gap:6px}
+.fday .d{font-family:var(--display);font-size:22px;color:var(--navy);line-height:1}
+.fday .c{font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.fday .hl{font-size:20px;font-weight:600}
+.fday .hl span{color:var(--muted);font-weight:400;font-size:15px;margin-left:6px}
+.rainbar{height:5px;border-radius:3px;background:var(--line);overflow:hidden}
+.rainbar i{display:block;height:100%;background:var(--sea);border-radius:3px}
+.fday .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2)}
+.fday svg{width:26px;height:26px}
+.empty{height:120px;display:grid;place-items:center;color:var(--muted);font-size:13px;text-align:center;border:1px dashed var(--line);border-radius:12px;padding:12px}
+footer{text-align:center;color:var(--muted);font-size:12px}
+footer .tag{font-family:var(--display);font-size:20px;color:var(--navy);letter-spacing:.1em}
+.banner{border:1px solid var(--line);background:var(--haze);border-radius:14px;padding:12px 16px;font-size:14px;color:var(--ink)}
+
+@media (max-width:1040px){
+  .now-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .now-grid .card:last-child{grid-column:1/-1}
+  .stack{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  .topbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .brand{grid-column:1/-1}
+  .tb-clock,.tb-eta{padding:9px 12px 10px}
+  .clk-date{white-space:normal}
+  .clk-time small{display:none}
+}
+@media (max-width:640px){
+  .now-grid{grid-template-columns:1fr}
+  .grow{grid-template-columns:1fr}
+  .grow .t{border-right:0;border-bottom:1px solid var(--line)}
+  .grow .t:last-child{border-bottom:0}
+  .rep-chips{grid-template-columns:1fr}
+  .rep-chips .t{border-right:0;border-bottom:1px solid var(--line)}
+  .rep-chips .t:last-child{border-bottom:0}
+}
+@media (max-width:420px){
+  .clk-time,.eta-time{font-size:24px}
+  .days{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){
+  .flow path.flowing{animation:none}
+  .dot.live{animation:none}
+}
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="topbar">
+      <div class="brand">
+        <h1>Slo M'Ocean Farm's Dashboard</h1>
+        <p>Live from Water Island, St Thomas</p>
+        <div class="status" role="status" aria-live="polite"><span class="dot" id="statusDot"></span><span id="statusText">Connecting to Google Drive…</span></div>
+      </div>
+      <div class="card tb-clock">
+        <div class="eyebrow">Now</div>
+        <div class="clk-time"><span id="clkTime">—</span><small>AST</small></div>
+        <div class="clk-date" id="clkDate">—</div>
+      </div>
+      <div class="card tb-eta" id="etaCard">
+        <div class="eyebrow" id="etaLabel">Battery</div>
+        <div class="eta-time" id="etaTime">—</div>
+        <div class="eta-sub" id="etaSub">Waiting for a reading</div>
+      </div>
+    </div>
+
+    <div class="alertbar" id="alertBar" hidden></div>
+    <div class="card flow flowbar" id="flowbar">
+      <svg viewBox="0 0 1000 130" id="flowSvg" role="img" aria-label="Energy flow between solar array, battery, house and grid"></svg>
+    </div>
+
+    <div class="now-grid">
+      <section class="card" aria-label="Outdoor now">
+        <div class="card-h"><span class="eyebrow">Outdoor now</span></div>
+        <div class="od-main">
+          <div class="temp-big" id="heroTemp">—<sup>°F</sup></div>
+          <div class="od-list">
+            <span>Feels like <b id="heroFeels">—</b></span>
+            <span>Humidity <b id="heroHum">—</b></span>
+            <span>Wind <b id="heroWind">—</b></span>
+          </div>
+        </div>
+        <div class="mini" id="wxGrid"></div>
+      </section>
+
+      <section class="card" aria-label="Sun and tides">
+        <div class="card-h"><span class="eyebrow">Sun &amp; tides</span></div>
+        <div class="arc-box"><svg viewBox="0 0 420 118" id="sunArc" role="img" aria-label="Sun position today"></svg></div>
+        <div class="sea-tiles" id="seaTiles"></div>
+      </section>
+
+      <section class="card" aria-label="Moon and planting">
+        <div class="card-h"><span class="eyebrow">Moon &amp; planting</span></div>
+        <div id="moonCard"></div>
+      </section>
+    </div>
+  </header>
+
+  <div class="banner" id="banner" hidden></div>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Grow Conditions</h2><span class="stamp">From the weather station</span></div>
+    <div class="grow" id="growTiles"></div>
+  </section>
+
+  <section class="panel" id="reportPanel">
+    <div class="panel-head"><h2>Today’s Outlook</h2><span class="stamp" id="reportStamp">Daily report</span></div>
+    <div id="reportToday"></div>
+    <h3 class="sub-h">The Days Ahead</h3>
+    <div id="outlook"><div class="fc" id="forecast"><div class="empty">Forecast appears once the sheet loads.</div></div></div>
+  </section>
+
+  <section class="stack">
+    <div class="panel">
+      <div class="panel-head"><h2>On the Water</h2><span class="stamp" id="marineStamp">Marine forecast</span></div>
+      <div id="marine"><div class="empty">The marine forecast arrives with the morning report.</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>Good Days for…</h2></div>
+      <div id="work"><div class="empty">Work suitability arrives with the morning report.</div></div>
+    </div>
+  </section>
+
+  <footer><span class="tag">Slo M'Ocean Farms · Water Island</span></footer>
+</div>
+
+<script>
+(() => {
+const FILE_ID = "195ANkJGeUheFv91LdpOJUMpTxSLjjA50t1Quo3qQdiE";
+const SERVER = "Google Drive";
+const LAT = 18.318, LON = -64.953, TZ = "America/St_Thomas";
+/* Battery size used for the 100% / 12% time. About 22 kWh, worked out from the April 2026
+   inverter log (charge and discharge both land between 21 and 24 kWh per 100%). Edit if the real figure differs. */
+const BATT_KWH = 10.3, BATT_FLOOR = 12;
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+let live = {}, forecast = [], lastLiveAt = null, report = null;
+const battSamples = [];
+
+/* ---------- helpers ---------- */
+const num = v => { if (v == null) return NaN; const s = String(v).replace(/\\/g,"").replace(/[,%°]/g,"").trim(); const n = parseFloat(s); return isFinite(n) ? n : NaN; };
+const fmt = (n, d=0) => isFinite(n) ? n.toLocaleString("en-US",{maximumFractionDigits:d,minimumFractionDigits:d}) : "—";
+const kw = w => !isFinite(w) ? "—" : Math.abs(w) >= 1000 ? fmt(w/1000,1)+" kW" : fmt(w)+" W";
+const norm = s => String(s||"").replace(/\\/g,"").replace(/[^A-Za-z0-9 %()/]/g," ").replace(/\s+/g," ").trim().toLowerCase();
+const esc = v => String(v==null?"":v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function el(tag, attrs={}, parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
+function stNow(){
+  const p = new Intl.DateTimeFormat("en-US",{timeZone:TZ,hour:"numeric",minute:"numeric",hour12:false}).formatToParts(new Date());
+  const h = +p.find(x=>x.type==="hour").value % 24, m = +p.find(x=>x.type==="minute").value; return h + m/60;
+}
+const stDate = d => d.toLocaleDateString("en-US",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"});
+const stTime = d => d.toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"});
+const stDay = d => d.toLocaleDateString("en-US",{timeZone:TZ,weekday:"short"});
+const stMD = d => d.toLocaleDateString("en-US",{timeZone:TZ,month:"short",day:"numeric"});
+const hhmm = h => { const t=Math.round(h*60), H=Math.floor(t/60)%24, M=t%60; const hh=((H+11)%12)+1; return `${hh}:${String(M).padStart(2,"0")} ${H<12?"AM":"PM"}`; };
+const durTxt = h => { const m=Math.max(0,Math.round(h*60)); if(m<60) return `${m} min`; if(m<2880) return `${Math.floor(m/60)} h ${m%60} min`; return `${Math.floor(m/1440)} d ${Math.round((m%1440)/60)} h`; };
+
+/* ---------- parse read_file_content markdown ---------- */
+const LABELS = {
+  "temp out":"tempOut","feels like":"feels","dew pt out":"dewOut","temp in":"tempIn","humidity in":"humIn","dew pt in":"dewIn",
+  "wind speed":"wind","wind gusts":"gust","wind dir":"windDir","rain rate":"rainRate","rain today":"rainToday","rain event":"rainEvent",
+  "rain weekly":"rainWeek","rain monthly":"rainMonth","pressure rel":"presRel","pressure abs":"presAbs","uvi":"uvi","solar rad":"solarRad",
+  "outdoor humidity":"humOut","incoming solar":"pv","house using":"load","grid power":"grid","battery power":"batt","battery soc":"soc","efficiency":"eff"
+};
+const DAYS = /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i;
+function parseSheet(md){
+  const out = { vals:{}, forecasts:[], solarRows:[], wxRows:[] };
+  let tables = String(md).split(/\n\s*\n/);
+  // Source of truth: the sheet's "public" tab (the only table with a t_solar header). Other tabs are ignored when it exists.
+  // Source of truth: a "public" tab (=dashboard!B1:I45 — has the readings but not the device ID/Key rows).
+  // Until that tab exists, fall back to the "dashboard" tab (the one listing "Your Devices"). Never displays the Key.
+  const withLabels = tables.filter(tb=>/battery soc\s*\|/i.test(tb) && !/\|\s*Timestamp\s*\|/i.test(tb)); // label cell "… Battery SOC", not a log header like "Battery SOC (%)"
+  const pub = withLabels.find(tb=>!/\|\s*Your Devices\s*\|/i.test(tb)) || withLabels[0];
+  let lim = Infinity;
+  if (pub){ tables=[pub]; out.fromPublic = !/\|\s*Your Devices\s*\|/i.test(pub); }
+  for (const tb of tables){
+    const rows = tb.split("\n").filter(l=>l.trim().startsWith("|")).map(l=>l.split("|").slice(1,-1).map(c=>c.replace(/\\/g,"").trim().replace(/^\[merged\]\s*/,"")).slice(0,lim));
+    let fc = [], hdr = null, kind = null;
+    for (const r of rows){
+      if (r.every(c=>/^:?-+:?$/.test(c)||c==="")) continue;
+      const lower = r.map(c=>c.toLowerCase());
+      if (lower[0]==="timestamp"){ hdr = r; kind = lower.some(c=>c.startsWith("pv power")) ? "solar" : lower.some(c=>c==="temp out") ? "wx" : null; continue; }
+      if (hdr && kind){ const o={}; hdr.forEach((h,i)=>o[h]=r[i]); (kind==="solar"?out.solarRows:out.wxRows).push(o); continue; }
+      for (let i=0;i<r.length;i++){
+        const c = r[i], n = norm(c);
+        if (/^last reading:?$/i.test(c.trim()) && r[i+1]) out.vals.wxTime = r[i+1];
+        const mw = c.match(/^WEATHER:\s*(.+)$/i); if (mw) out.vals.wxTime = out.vals.wxTime || mw[1];
+        const ms = c.match(/(Sept?\.? \d+ @ [\d:]+)/i); if (ms && /solar/i.test(r.join(" "))) out.vals.solarTime = ms[1];
+        if (LABELS[n]){ for (let j=i+1;j<r.length;j++){ if (r[j] && !/^\[merged\]/.test(r[j])){ out.vals[LABELS[n]] = r[j]; break; } } }
+        if (DAYS.test(c.trim()) && /°/.test(r[i+1]||"")){
+          fc.push({ day:c.trim(), hi:num(r[i+1]), lo:num(r[i+2]), cond:r[i+3]||"", rain:num(r[i+4]), wind:r[i+5]||"", uv:r[i+6]||"" });
+        }
+      }
+    }
+    if (fc.length) out.forecasts.push(fc);
+  }
+  return out;
+}
+
+/* ---------- clock ---------- */
+const clockDate = new Intl.DateTimeFormat("en-US",{timeZone:TZ,weekday:"long",month:"long",day:"numeric",year:"numeric"});
+const clockTime = new Intl.DateTimeFormat("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit",second:"2-digit"});
+function tickClock(){ const n=new Date(); $("clkTime").textContent=clockTime.format(n); $("clkDate").textContent=clockDate.format(n); }
+
+/* ---------- sun ---------- */
+function sunTimes(date){
+  const d = new Date(date); const start = Date.UTC(d.getUTCFullYear(),0,0); const doy = Math.floor((d - start)/864e5);
+  const g = 2*Math.PI/365*(doy-1);
+  const eqt = 229.18*(0.000075+0.001868*Math.cos(g)-0.032077*Math.sin(g)-0.014615*Math.cos(2*g)-0.040849*Math.sin(2*g));
+  const decl = 0.006918-0.399912*Math.cos(g)+0.070257*Math.sin(g)-0.006758*Math.cos(2*g)+0.000907*Math.sin(2*g)-0.002697*Math.cos(3*g)+0.00148*Math.sin(3*g);
+  const lat = LAT*Math.PI/180;
+  const ha = Math.acos(Math.cos(90.833*Math.PI/180)/(Math.cos(lat)*Math.cos(decl)) - Math.tan(lat)*Math.tan(decl))*180/Math.PI;
+  const noonUtcMin = 720 - 4*LON - eqt; const off = -4*60;
+  return { rise:(noonUtcMin-4*ha+off)/60, set:(noonUtcMin+4*ha+off)/60 };
+}
+const dayLen = date => { const s=sunTimes(date); return s.set-s.rise; };
+function drawSun(){
+  const svg = $("sunArc"); svg.innerHTML="";
+  const now = new Date(), {rise,set} = sunTimes(now), t = stNow();
+  const x0=30,x1=390,y0=92,rx=180,ry=76,cx=(x0+x1)/2;
+  el("path",{d:`M${x0} ${y0} A ${rx} ${ry} 0 0 1 ${x1} ${y0}`,fill:"none",stroke:"var(--navy)","stroke-width":1.2,"stroke-dasharray":"3 5",opacity:.55},svg);
+  el("line",{x1:10,x2:410,y1:y0,y2:y0,stroke:"var(--navy)","stroke-width":1,opacity:.35},svg);
+  const f = Math.max(0,Math.min(1,(t-rise)/(set-rise))), up = t>rise && t<set;
+  const ang = Math.PI*(1-f), sx = cx + rx*Math.cos(ang), sy = y0 - ry*Math.sin(ang);
+  if (up){
+    el("path",{d:`M${x0} ${y0} A ${rx} ${ry} 0 0 1 ${sx.toFixed(1)} ${sy.toFixed(1)}`,fill:"none",stroke:"var(--navy)","stroke-width":2,opacity:.9},svg);
+    el("circle",{cx:sx,cy:sy,r:20,fill:"#fff",opacity:.28},svg);
+    el("circle",{cx:sx,cy:sy,r:11,fill:"#fff4dc",stroke:"var(--navy)","stroke-width":1.5},svg);
+  } else {
+    el("circle",{cx:t<rise?x0:x1,cy:y0,r:7,fill:"var(--navy)",opacity:.6},svg);
+  }
+  const a=el("text",{x:x0,y:y0+20,"text-anchor":"start",class:"arc-label"},svg); a.textContent="SUNRISE "+hhmm(rise);
+  const b=el("text",{x:x1,y:y0+20,"text-anchor":"end",class:"arc-label"},svg); b.textContent="SUNSET "+hhmm(set);
+  const tot=Math.round((set-rise)*60), prevTot=Math.round(dayLen(new Date(now-864e5))*60), diff=Math.round(((set-rise)-dayLen(new Date(now-864e5)))*3600/60*10)/10;
+  const c=el("text",{x:cx,y:58,"text-anchor":"middle",class:"arc-day"},svg); c.textContent=`${Math.floor(tot/60)} h ${tot%60} min`;
+  const d=el("text",{x:cx,y:76,"text-anchor":"middle",class:"arc-sub"},svg); d.textContent=`daylight · ${diff<0?"−":"+"}${Math.abs(diff)} min vs yesterday`;
+}
+
+/* ---------- tides ---------- */
+const TIDES = "26092302350.588L;26092304550.606H;26092311330.35L;26092319131.028H;26092402210.594L;26092406250.686H;26092412300.421L;26092419380.981H;26092502180.568L;26092507370.779H;26092513320.495L;26092519580.901H;26092602200.511L;26092608370.875H;26092614480.558L;26092620120.797H;26092702270.43L;26092709300.961H;26092716260.592L;26092720180.687H;26092802390.333L;26092810231.026H;26092902590.235L;26092911221.068H;26093003300.151L;26093012321.092H;26100104140.094L;26100113521.112H;26100205130.07L;26100215051.131H;26100306200.082L;26100316061.145H;26100407330.13L;26100416591.142H;26100508540.208L;26100517441.116H;26100610190.304L;26100618211.061H;26100701310.547L;26100705330.649H;26100711390.405L;26100718470.979H;26100801350.525L;26100806580.781H;26100812560.5L;26100819040.878H;26100901460.478L;26100908040.905H;26100914170.574L;26100919120.772H;26101001580.416L;26101008561.0H;26101015530.608L;26101019140.672H;26101102070.351L;26101109421.057H;26101202100.287L;26101210261.074H;26101302100.23L;26101311111.059H;26101402220.19L;26101412021.029H;26101502530.173L;26101513031.001H;26101603430.179L;26101614070.989H;26101704530.206L;26101715010.995H;26101806050.247L;26101815451.009H;26101907140.306L;26101916221.018H;26102008290.38L;26102016531.008H;26102100530.534L;26102104330.596H;26102109560.459L;26102117200.969H;26102200380.515L;26102205520.708H;26102211240.526L;26102217450.898H;26102300350.46L;26102306570.828H;26102312480.572L;26102318040.797H;26102400410.377L;26102407520.945H;26102414210.59L;26102418160.681H;26102500530.276L;26102508411.043H;26102601100.171L;26102609301.114H;26102701330.075L;26102710211.153H;26102802030.004L;26102811191.165H;2610290243-0.03L;26102912261.161H;2610300336-0.022L;26103013381.151H;26103104440.029L;26103114411.136H;26110105590.118L;26110115321.103H;26110207160.238L;26110216101.045H;26110300250.438L;26110303500.476H;26110308470.374L;26110316380.96H;26110400050.429L;26110405290.631H;26110410330.493L;26110416540.858H;26110500090.382L;26110506380.785H;26110512140.568L;26110517010.75H;26110600210.314L;26110607330.916H;26110613530.593L;26110617000.647H;26110700340.239L;26110708171.008H;26110800470.167L;26110808571.057H;26110900570.106L;26110909341.066H;26111001070.06L;26111010121.047H;26111101230.031L;26111110531.015H;26111201480.024L;26111211390.985H;26111302210.039L;26111312290.966H;26111403040.076L;26111413190.962H;26111503560.137L;26111514030.962H;26111604590.218L;26111614370.954H;26111706090.319L;26111715060.924H;26111723350.406L;26111803550.474H;26111807360.429L;26111815290.864H;26111823080.368L;26111905100.606H;26111909390.523L;26111915490.774H;26111923050.29L;26112006080.743H;26112011500.558L;26112016010.662H;26112023150.184L;26112106590.871H;26112123330.067L;26112207480.98H;2611222358-0.048L;26112308361.061H;2611240028-0.145L;26112409261.111H;2611250103-0.209L;26112510191.13H;2611260144-0.232L;26112611151.126H;2611270231-0.205L;26112712151.103H;2611280326-0.128L;26112813141.065H;2611290431-0.007L;26112914031.005H;26113005460.146L;26113014390.919H;26113022580.308L;26120103320.358H;26120107110.313L;26120114590.813H;26120122390.277L;26120205040.531H;26120209050.459L;26120215060.699H;26120222470.21L;26120306030.689H;26120311270.529L;26120315010.592H;26120323020.126L;26120406510.815H;26120423200.04L;26120507330.898H;2612052340-0.036L;26120608110.939H;2612070001-0.095L;26120708470.946H;2612080024-0.135L;26120809240.933H;2612090048-0.154L;26120910010.913H;2612100114-0.154L;26121010390.895H;2612110143-0.134L;26121111170.886H;2612120213-0.092L;26121211540.88H;2612130246-0.026L;26121312270.87H;26121403230.063L;26121412560.845H;26121504110.173L;26121513200.795H;26121521570.272L;26121602320.311H;26121605320.296L;26121613390.719H;26121621290.217L;26121704150.444H;26121707280.412L;26121713530.62H;26121721290.122L;26121805090.581H;26121810260.472L;26121813530.51H;26121821450.005L;26121905580.71H;2612192211-0.121L;26122006480.821H;2612202246-0.239L;26122107390.909H;2612212326-0.335L;26122208310.973H;2612230010-0.399L;26122309221.011H;2612240056-0.417L;26122410131.021H;2612250144-0.382L;26122511031.002H;2612260235-0.292L;26122611500.952H;2612270331-0.155L;26122712310.872H;26122804380.015L;26122813000.766H;26122820550.204L;26122900440.247H;26122906000.191L;26122913130.645H;26122920580.152L;26123003570.405H;26123007400.344L;26123013090.528H;26123021120.074L;26123105000.553H;26123110250.422L;26123112350.432H;2612312128-0.04L;27010105500.665H;2701012157-0.123L;27010206350.727H;2701022230-0.194L;27010307170.757H;2701032307-0.247L;27010407570.765H;2701042344-0.28L;27010508360.764H;2701060020-0.292L;27010609120.764H;2701070052-0.282L;27010709450.765H;2701080121-0.249L;27010810150.766H;2701090148-0.194L;27010910420.759H;2701100216-0.119L;27011011050.737H;2701110247-0.026L;27011111240.692H;27011203300.08L;27011211390.624H;27011219320.175L;27011223420.254H;27011304430.191L;27011311480.536H;27011319270.099L;27011402210.338H;27011406300.288L;27011411490.438H;2701141936-0.004L;27011503440.452H;27011509080.342L;27011511110.35H;2701151959-0.121L;27011604410.562H;2701162034-0.236L;27011705370.66H;2701172121-0.338L;27011806330.746H;2701182215-0.419L;27011907280.817H;2701192312-0.469L;27012008200.868H;2701210006-0.477L;27012109080.89H;2701220059-0.434L;27012209500.875H;2701230152-0.338L;27012310270.819H;2701240249-0.199L;27012410560.727H;27012418370.159L;27012421270.209H;2701250357-0.037L;27012511140.61H;27012518450.119L;27012523110.274H;27012605170.118L;27012611190.488H;27012619010.053L;27012701380.362H;27012706490.24L;27012711120.38H;2701271920-0.027L;27012803210.466H;2701281944-0.108L;27012904220.542H;2701292015-0.18L;27013005140.586H;2701302057-0.237L;27013106040.606H;2701312149-0.28L;27020106510.616H;2702012243-0.31L;27020207350.627H;2702022332-0.322L;27020308130.641H;2702040013-0.311L;27020408460.657H;2702050048-0.274L;27020509130.666H;2702060121-0.214L;27020609360.659H;2702070154-0.134L;27020709560.629H;27020717510.186L;27020720240.215H;2702080232-0.042L;27020810110.573H;27020817410.165L;27020821320.258H;27020903220.053L;27020910220.493H;27020917340.113L;27020922400.306H;27021004370.14L;27021010280.4H;27021017360.03L;27021100010.358H;27021106120.205L;27021110240.307H;2702111749-0.071L;27021201400.422H;2702121815-0.177L;27021303050.498H;2702131854-0.273L;27021404130.574H;2702141945-0.349L;27021505150.646H;2702152049-0.401L;27021606150.709H;2702162159-0.426L;27021707100.757H;2702172307-0.42L;27021807580.778H;2702190008-0.373L;27021908390.761H;2702200107-0.282L;27022009120.702H;27022016250.155L;27022019370.22H;2702210209-0.158L;27022109360.607H;27022116340.13L;27022120580.309H;2702220319-0.022L;27022209500.49H;27022216500.079L;27022222100.389H;27022304410.096L;27022309540.373H;27022317070.011L;27022323250.45H;27022406120.175L;27022409490.273H;2702241726-0.062L;27022500520.492H;2702251747-0.13L;27022602190.519H;2702261815-0.184L;27022703280.532H;2702271855-0.219L;27022804270.536H;2702281952-0.237L;27030105210.54H;2703012103-0.242L;27030206100.551H;2703022213-0.239L;27030306530.57H;2703032310-0.222L;27030407280.588H;2703042358-0.183L;27030507560.596H;27030515290.169L;27030517510.189H;2703060041-0.125L;27030608200.583H;27030615270.176L;27030619100.252H;2703070126-0.052L;27030708400.542H;27030715270.161L;27030720120.321H;27030802170.026L;27030808570.474H;27030815260.12L;27030821070.389H;27030903210.096L;27030909080.385H;27030915270.053L;27030921580.449H;27031004440.145L;27031009130.288H;2703101534-0.034L;27031022520.497H;27031106190.165L;27031109050.202H;2703111552-0.128L;27031123550.532H;2703121622-0.215L;27031301130.564H;2703131706-0.283L;27031402360.602H;2703141802-0.325L;27031503470.646H;2703151908-0.335L;27031604490.687H;2703162024-0.316L;27031705440.713H;2703172147-0.27L;27031806330.713H;2703182306-0.203L;27031907130.679H;27031914210.135L;27031917520.209H;2703200018-0.115L;27032007450.608H;27032014270.122L;27032019200.333H;2703210128-0.015L;27032108070.508H;27032114390.081L;27032120280.454H;27032202450.079L;27032208200.395H;27032214540.021L;27032221260.55H;27032304140.143L;27032308250.286H;2703231509-0.046L;27032322190.609H;27032405520.166L;27032408210.198H;2703241520-0.111L;27032423120.628H;2703251529-0.165L;27032600110.615H;2703261545-0.2L;27032701190.588H;2703271623-0.211L;27032802300.565H;2703281725-0.199L;27032903310.555H;2703291837-0.17L;27033004220.557H;2703301954-0.128L;27033105060.567H;2703312117-0.077L".split(";").map(x=>{ const y=2000+ +x.slice(0,2), mo=+x.slice(2,4)-1, d=+x.slice(4,6), h=+x.slice(6,8), mi=+x.slice(8,10);
+  return { t:new Date(Date.UTC(y,mo,d,h+4,mi)), h:parseFloat(x.slice(10,-1)), type:x.slice(-1) }; });
+function drawSea(){
+  const now=new Date();
+  const nextH=TIDES.find(x=>x.type==="H"&&x.t>now), nextL=TIDES.find(x=>x.type==="L"&&x.t>now);
+  const rel = d => `in ${durTxt((d-now)/36e5)}`;
+  const whenDay = d => stDate(d)===stDate(now)?"":" "+stDay(d);
+  const tile=(k,x)=>`<div class="t"><div class="k">${k}</div><div class="v">${x?stTime(x.t)+whenDay(x.t):"—"}</div><div class="s">${x?`${fmt(x.h,1)} ft · ${rel(x.t)}`:"Tide table ended"}</div></div>`;
+  $("seaTiles").innerHTML = tile("Next high tide",nextH)+tile("Next low tide",nextL);
+}
+
+/* ---------- moon & planting (recomputed every minute, so it updates itself daily) ---------- */
+const RAD=Math.PI/180, mod=(x,m)=>((x%m)+m)%m;
+const jdOf=d=>d/864e5+2440587.5, fromJd=jd=>new Date((jd-2440587.5)*864e5);
+function moonLon(jd){ const T=(jd-2451545)/36525, s=x=>Math.sin(x*RAD);
+  const Lp=218.3164477+481267.88123421*T, D=297.8501921+445267.1114034*T, M=357.5291092+35999.0502909*T, Mp=134.9633964+477198.8675055*T, F=93.2720950+483202.0175233*T;
+  return mod(Lp+6.288774*s(Mp)+1.274027*s(2*D-Mp)+0.658314*s(2*D)+0.213618*s(2*Mp)-0.185116*s(M)-0.114332*s(2*F)+0.058793*s(2*D-2*Mp)+0.057066*s(2*D-M-Mp)+0.053322*s(2*D+Mp)+0.045758*s(2*D-M)-0.040923*s(M-Mp)-0.034720*s(D)-0.030383*s(M+Mp),360); }
+function sunLon(jd){ const T=(jd-2451545)/36525, M=(357.52911+35999.05029*T)*RAD;
+  return mod(280.46646+36000.76983*T+1.914602*Math.sin(M)+0.019993*Math.sin(2*M),360); }
+function truePhase(k, full){ // Meeus ch. 49, minute-level accuracy
+  const T=k/1236.85, s=Math.sin;
+  const jde=2451550.09766+29.530588861*k+0.00015437*T*T-0.00000015*T**3+0.00000000073*T**4;
+  const E=1-0.002516*T-0.0000074*T*T;
+  const M=(2.5534+29.10535670*k-0.0000014*T*T-0.00000011*T**3)*RAD;
+  const Mp=(201.5643+385.81693528*k+0.0107582*T*T+0.00001238*T**3-0.000000058*T**4)*RAD;
+  const F=(160.7108+390.67050284*k-0.0016118*T*T-0.00000227*T**3+0.000000011*T**4)*RAD;
+  const Om=(124.7746-1.56375588*k+0.0020672*T*T+0.00000215*T**3)*RAD;
+  const c=full?[-0.40614,0.17302,0.01614,0.01043,0.00734,-0.00515,0.00209]:[-0.40720,0.17241,0.01608,0.01039,0.00739,-0.00514,0.00208];
+  const corr=c[0]*s(Mp)+c[1]*E*s(M)+c[2]*s(2*Mp)+c[3]*s(2*F)+c[4]*E*s(Mp-M)+c[5]*E*s(Mp+M)+c[6]*E*E*s(2*M)
+    -0.00111*s(Mp-2*F)-0.00057*s(Mp+2*F)+0.00056*E*s(2*Mp+M)-0.00042*s(3*Mp)+0.00042*E*s(M+2*F)+0.00038*E*s(M-2*F)-0.00024*E*s(2*Mp-M)-0.00017*s(Om);
+  return fromJd(jde+corr-69/86400);
+}
+function phaseEvents(from, to){ // every full and new moon between two dates
+  const k0=Math.floor((from.getUTCFullYear()+from.getUTCMonth()/12-2000)*12.3685)-2, out=[];
+  for(let n=k0;n<k0+40;n++) for(const full of [false,true]){ const d=truePhase(n+(full?0.5:0),full); if(d>=from&&d<=to) out.push({t:d,full}); }
+  return out.sort((a,b)=>a.t-b.t);
+}
+const SIGNS=[["Aries","♈","Fire","Fruit"],["Taurus","♉","Earth","Root"],["Gemini","♊","Air","Flower"],["Cancer","♋","Water","Leaf"],["Leo","♌","Fire","Fruit"],["Virgo","♍","Earth","Root"],
+  ["Libra","♎","Air","Flower"],["Scorpio","♏","Water","Leaf"],["Sagittarius","♐","Fire","Fruit"],["Capricorn","♑","Earth","Root"],["Aquarius","♒","Air","Flower"],["Pisces","♓","Water","Leaf"]];
+const CROPS={Leaf:"leafy greens and herbs (callaloo, lettuce, kale, basil)",Root:"root crops and bulbs (sweet potato, cassava, onions)",Flower:"flowers, broccoli and cauliflower",Fruit:"tomatoes, peppers, beans and squash"};
+function moonAt(date){ const jd=jdOf(date), ml=moonLon(jd), el_=mod(ml-sunLon(jd),360); const sg=SIGNS[Math.floor(ml/30)];
+  return {lon:ml,elong:el_,sign:sg,illum:(1-Math.cos(el_*RAD))/2,waxing:el_<180}; }
+function phaseName(e){ return e<12||e>348?"New moon":e<78?"Waxing crescent":e<102?"First quarter":e<168?"Waxing gibbous":e<192?"Full moon":e<258?"Waning gibbous":e<282?"Last quarter":"Waning crescent"; }
+let moonUid=0;
+function moonSvg(f){
+  const r=28, cx=30, k=Math.cos(2*Math.PI*f), right=f<0.5, id="mc"+(++moonUid);
+  const outer=`M${cx} 2 A${r} ${r} 0 0 ${right?1:0} ${cx} 58`, inner=`A${Math.abs(k*r)} ${r} 0 0 ${(k>0)===right?0:1} ${cx} 2`;
+  const maria=`<ellipse cx="22" cy="20" rx="9" ry="7" fill="#9d9788" opacity=".55"/><ellipse cx="36" cy="16" rx="6" ry="5" fill="#9d9788" opacity=".5"/><ellipse cx="41" cy="30" rx="7" ry="8" fill="#9d9788" opacity=".5"/><ellipse cx="24" cy="36" rx="8" ry="6" fill="#9d9788" opacity=".45"/><ellipse cx="33" cy="44" rx="6" ry="4" fill="#9d9788" opacity=".4"/>
+    <circle cx="16" cy="40" r="3" fill="#b3ad9e" opacity=".6"/><circle cx="44" cy="44" r="2.6" fill="#b3ad9e" opacity=".6"/><circle cx="30" cy="27" r="2.2" fill="#c2bcad" opacity=".7"/><circle cx="20" cy="49" r="2" fill="#b3ad9e" opacity=".55"/><circle cx="46" cy="18" r="2" fill="#b3ad9e" opacity=".55"/>`;
+  return `<svg viewBox="-4 -4 68 68" aria-hidden="true"><defs><clipPath id="${id}"><path d="${outer} ${inner} Z"/></clipPath><clipPath id="${id}d"><circle cx="30" cy="30" r="28"/></clipPath><radialGradient id="${id}g" cx="40%" cy="38%" r="70%"><stop offset="0" stop-color="#fbf6e6"/><stop offset="1" stop-color="#d9d2bd"/></radialGradient></defs>
+  <circle cx="30" cy="30" r="31" fill="#f4e9c4" opacity=".18"/>
+  <circle cx="30" cy="30" r="28" fill="#1b2347"/>
+  <g clip-path="url(#${id}d)" opacity=".18">${maria}</g>
+  <g clip-path="url(#${id})"><circle cx="30" cy="30" r="28" fill="url(#${id}g)"/>${maria}</g>
+  <circle cx="30" cy="30" r="28" fill="none" stroke="#7e86a8" stroke-width=".8" opacity=".6"/></svg>`;
+}
+function nextIngress(now, idx){ // when the moon leaves its current sign
+  for(let t=+now+6e5;t<+now+4*864e5;t+=6e5){ if(Math.floor(moonLon(jdOf(new Date(t)))/30)!==idx) return new Date(t); } return null;
+}
+const whenShort = d => `${stDay(d)} ${stTime(d)}`;
+function drawMoon(){
+  const now=new Date(), m=moonAt(now), [sname,glyph,elem,dtype]=m.sign;
+  const ev=phaseEvents(new Date(+now-36e5*30), new Date(+now+36e5*24*32));
+  const nextFull=ev.find(e=>e.full&&e.t>now), nextNew=ev.find(e=>!e.full&&e.t>now);
+  const ing=nextIngress(now, SIGNS.indexOf(m.sign));
+  // next 5 local days, one day type each (sign at noon; today uses right now). A full or new moon day is a rest day.
+  const [mm,dd,yy]=stDate(now).split("/").map(Number), days=[];
+  for(let i=0;i<5;i++){ const noon=new Date(Date.UTC(yy,mm-1,dd+i,16)), at=i===0?now:noon, s=moonAt(at).sign;
+    const rest=ev.find(e=>stDate(e.t)===stDate(noon)); days.push({i,noon,type:s[3],sign:s[0],rest:rest?(rest.full?"Full moon":"New moon"):null}); }
+  const pick=days.find(d=>!d.rest)||days[0];
+  const label=pick.i===0?"Today":pick.i===1?"Tomorrow":stDay(pick.noon);
+  const after=days.filter(d=>d.i>0).slice(0,4);
+  $("moonCard").innerHTML =
+    `<div class="moon-head">${moonSvg(m.elong/360)}<div><div class="moon-name">${phaseName(m.elong)}</div><div class="s">${Math.round(m.illum*100)}% lit</div></div></div>`+
+    `<div class="moon-sign" style="margin-top:8px"><span class="g">${glyph}︎</span><b>${sname}</b><span>${elem} · ${dtype} day</span>${ing?`<span class="s">→ ${SIGNS[(SIGNS.indexOf(m.sign)+1)%12][0]} ${whenShort(ing)}</span>`:""}</div>`+
+    `<dl class="kv" style="margin:8px 0 0"><dt>Full Moon</dt><dd>${nextFull?`${stDay(nextFull.t)} ${stMD(nextFull.t)} · ${stTime(nextFull.t)} <span class="s">(in ${durTxt((nextFull.t-now)/36e5)})</span>`:"—"}</dd>`+
+    `<dt>New Moon</dt><dd>${nextNew?`${stDay(nextNew.t)} ${stMD(nextNew.t)} · ${stTime(nextNew.t)}`:"—"}</dd></dl>`+
+    `<div class="plant" style="margin-top:10px"><div class="k">Next planting day</div>`+
+    `<div class="plant-main">${label} · ${pick.type} day${pick.i>0&&days[0].rest?` <span class="s">(${days[0].rest.toLowerCase()} today, rest)</span>`:""}</div>`+
+    `<div class="s">Sow ${CROPS[pick.type]}.</div>`+
+    `<div class="days">${after.map(d=>`<div class="d ${d.rest?"rest":""}"><b>${stDay(d.noon)}</b><span>${d.rest?`Rest · ${d.rest.toLowerCase()}`:d.type}</span></div>`).join("")}</div></div>`;
+}
+
+/* ---------- battery time to 100% or 12% ---------- */
+function pushBatt(){
+  const v=num(live.batt); if(!isFinite(v)) return;
+  const key=`${live.solarTime||""}|${live.wxTime||""}|${v}`; if(battSamples.length && battSamples[battSamples.length-1].key===key) return;
+  battSamples.push({key,v}); if(battSamples.length>4) battSamples.shift();
+}
+function battPower(){ // watts, + = discharging, − = charging; blends recent readings so one cloud or one kettle doesn't swing the estimate
+  if(!battSamples.length) return NaN;
+  const last=battSamples[battSamples.length-1].v; if(battSamples.length===1) return last;
+  const prev=battSamples.slice(0,-1).reduce((a,b)=>a+b.v,0)/(battSamples.length-1);
+  return Math.sign(prev)!==Math.sign(last) ? last : 0.6*last+0.4*prev;
+}
+function drawEta(){ drawEta0(); drawAlert(); }
+function drawEta0(){
+  const soc=num(live.soc), p=battPower(), lab=$("etaLabel"), tm=$("etaTime"), sb=$("etaSub");
+  if(!isFinite(soc)||!isFinite(p)){ lab.textContent="Battery"; tm.textContent="—"; sb.textContent="Waiting for a reading"; return; }
+  const now=new Date(), when=h=>{ const d=new Date(+now+h*36e5); return stTime(d)+(stDate(d)===stDate(now)?"":" "+stDay(d)); };
+  const pill=(cls,t)=>`<span class="pill ${cls}">${t}</span>`;
+  if(p<-20){
+    if(soc>=100){ lab.textContent="Battery"; tm.textContent="Full"; sb.innerHTML=pill("ok","100%")+`<span>${kw(-p)} still coming in</span>`; return; }
+    const h=(100-soc)/100*BATT_KWH/(-p/1000), late=stNow()+h>sunTimes(now).set;
+    lab.textContent="Battery reaches 100%"; tm.textContent=when(h);
+    sb.innerHTML=pill("ok","Charging")+`<span>in ${durTxt(h)} · ${kw(-p)}${late?" · after sunset":""}</span>`;
+  } else if(p>20){
+    if(soc<=BATT_FLOOR){ lab.textContent=`Battery at ${BATT_FLOOR}%`; tm.textContent="Now"; sb.innerHTML=pill("bad","Low")+`<span>${fmt(soc)}% · drawing ${kw(p)}</span>`; return; }
+    const h=(soc-BATT_FLOOR)/100*BATT_KWH/(p/1000);
+    lab.textContent=`Battery reaches ${BATT_FLOOR}%`; tm.textContent=when(h);
+    sb.innerHTML=pill("warn","Discharging")+`<span>in ${durTxt(h)} · ${kw(p)}</span>`;
+  } else {
+    lab.textContent="Battery"; tm.textContent=`${fmt(soc)}%`; sb.innerHTML=pill("mute","Steady")+`<span>No charge or draw right now</span>`;
+  }
+}
+
+/* ---------- battery alert + overnight check ---------- */
+function drawAlert(){
+  const bar=$("alertBar"), soc=num(live.soc), p=battPower(), load=num(live.load);
+  if(!isFinite(soc)){ bar.hidden=true; return; }
+  const now=new Date(), t=stNow(), sn=sunTimes(now), fmtH=h=>durTxt(h);
+  let cls="", msg="", tm=$("etaTime"); tm.style.color="";
+  const h2floor = p>20 ? Math.max(0,(soc-BATT_FLOOR)/100*BATT_KWH/(p/1000)) : Infinity;
+  if(p>20 && (soc<=BATT_FLOOR+3 || h2floor<1.5)){ cls="bad"; msg=`<b>Low battery.</b> ${fmt(soc)}% and falling; ${BATT_FLOOR}% in ${fmtH(h2floor)}. Switch off non-essential loads.`; tm.style.color="var(--crit)"; }
+  else if(p>20 && soc<=25 && h2floor<4){ cls="warn"; msg=`<b>Battery getting low.</b> ${fmt(soc)}%, ${BATT_FLOOR}% in ${fmtH(h2floor)} at ${kw(p)}.`; tm.style.color="var(--warn)"; }
+  else if(soc<=20 && p<-20){ cls="warn"; msg=`<b>Battery low</b> at ${fmt(soc)}% but charging (${kw(-p)}).`; }
+  // overnight: what is left at sunrise at today's house load (a full battery is assumed before sunset)
+  if(!msg && isFinite(load) && load>50){
+    const night = t>=sn.set ? (24-t+sn.rise) : t<sn.rise ? (sn.rise-t) : (24-sn.set+sn.rise), dark = t>=sn.set||t<sn.rise;
+    const start = dark ? soc : 100, need = load/1000*night/BATT_KWH*100, left = start-need, atRise = hhmm(sn.rise);
+    if(dark){
+      if(left>=BATT_FLOOR){ cls="ok"; msg=`<b>Overnight:</b> at ${kw(load)} the battery holds about ${Math.round(left)}% at sunrise (${atRise}).`; }
+      else { const out=(start-BATT_FLOOR)/100*BATT_KWH/(load/1000); cls="warn"; msg=`<b>Overnight:</b> at ${kw(load)} the battery reaches ${BATT_FLOOR}% in ${fmtH(out)}, ${fmtH(night-out)} before sunrise.`; }
+    } else {
+      const lasts=(100-BATT_FLOOR)/100*BATT_KWH/(load/1000);
+      if(lasts>=night){ cls="ok"; msg=`<b>Overnight:</b> a full battery at ${kw(load)} covers the ${fmtH(night)} night with about ${Math.round(100-need)}% left.`; }
+      else { cls="warn"; msg=`<b>Overnight:</b> a full battery at ${kw(load)} lasts ${fmtH(lasts)}, ${fmtH(night-lasts)} short of the ${fmtH(night)} night. Trim loads after sunset.`; }
+    }
+  }
+  bar.hidden=!msg; bar.className="alertbar "+cls; bar.innerHTML=msg;
+}
+
+/* ---------- energy flow ---------- */
+const flowSpeed = w => 5 + 0.036*Math.min(Math.max(w,0),6000); // px/s, proportional to watts: 0.9 kW ~37, 1.5 kW ~59, 2.4 kW ~91
+let flowNarrow = null;
+function drawFlow(){
+  const svg=$("flowSvg"); svg.innerHTML="";
+  const narrow=true; flowNarrow=narrow;
+  svg.setAttribute("viewBox", narrow?"0 0 520 240":"0 0 1000 130");
+  const pv=num(live.pv), load=num(live.load), grid=num(live.grid), batt=num(live.batt), soc=num(live.soc);
+  const info={
+    sun:{t:"Solar",v:kw(pv),s:isFinite(num(live.eff))?`Efficiency ${live.eff}`:"Array"},
+    batt:{t:"Battery",v:isFinite(soc)?fmt(soc)+"%":"—",s:!isFinite(batt)?"—":batt<-20?"Charging":batt>20?"Supplying":"Idle"},
+    home:{t:"House",v:kw(load),s:"Using now"},
+    grid:{t:"WAPA",v:kw(grid),s:!isFinite(grid)||Math.abs(grid)<20?"Off-grid":"Importing"}
+  };
+  const L = narrow
+   ? {hub:[260,120], n:{sun:{ix:44,iy:38,tx:92,ty:22,ls:[44,66]},home:{ix:304,iy:38,tx:352,ty:22,ls:[304,66]},batt:{ix:44,iy:184,tx:92,ty:168,ls:[44,162]},grid:{ix:304,iy:184,tx:352,ty:168,ls:[304,162]}}}
+   : {hub:[500,114], n:{sun:{ix:60,iy:38,tx:105,ty:22,ls:[60,66]},batt:{ix:310,iy:38,tx:355,ty:22,ls:[310,66]},home:{ix:560,iy:38,tx:605,ty:22,ls:[560,66]},grid:{ix:810,iy:38,tx:855,ty:22,ls:[810,66]}}};
+  const [hx,hy]=L.hub;
+  const links=[["sun",pv,"var(--sun)",1],["home",load,"var(--load)",-1],["batt",batt,"var(--sea)",batt<0?-1:1],["grid",grid,"var(--muted)",1]];
+  const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  for (const [k,val,col,dir] of links){
+    const n=L.n[k], [sx,sy]=n.ls;
+    const d = narrow ? `M${sx} ${sy} C ${sx} ${hy}, ${(sx+hx)/2} ${hy}, ${hx} ${hy}` : `M${sx} ${sy} C ${sx} ${sy+38}, ${hx} ${hy-36}, ${hx} ${hy}`;
+    el("path",{d,class:"track"},svg);
+    const w=Math.abs(val);
+    if (isFinite(w) && w>20){
+      el("path",{d,fill:"none",stroke:col,"stroke-width":11,"stroke-linecap":"round",opacity:.16},svg);
+      const p=el("path",{d,class:"flowing",stroke:col},svg);
+      const len=p.getTotalLength(), v=flowSpeed(w);            // more watts, faster arrows
+      p.style.animationDuration=(56/v)+"s"; if (dir<0) p.style.animationDirection="reverse";
+      const dur=len/v, count=Math.max(2,Math.round(len/150));
+      for (let i=0;i<(reduce?1:count);i++){
+        const g=el("g",{},svg);
+        el("path",{d:"M-9 -8 L10 0 L-9 8 L-5 0 Z",fill:col,stroke:"var(--panel)","stroke-width":1.5,"stroke-linejoin":"round"},g);
+        if (reduce){
+          const a=p.getPointAtLength(len*0.5), b=p.getPointAtLength(len*0.5+1);
+          let ang=Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI; if(dir<0) ang+=180;
+          g.setAttribute("transform",`translate(${a.x} ${a.y}) rotate(${ang})`);
+        } else {
+          el("animateMotion",{dur:dur+"s",repeatCount:"indefinite",rotate:dir<0?"auto-reverse":"auto",begin:(-i*dur/count)+"s",keyPoints:dir<0?"1;0":"0;1",keyTimes:"0;1",calcMode:"linear",path:d},g);
+        }
+      }
+    }
+  }
+  const ring=el("circle",{cx:hx,cy:hy,r:8,fill:"none",stroke:"var(--navy)","stroke-width":2,opacity:.5},svg);
+  if(!reduce){ el("animate",{attributeName:"r",values:"8;20",dur:"2.4s",repeatCount:"indefinite"},ring); el("animate",{attributeName:"opacity",values:".5;0",dur:"2.4s",repeatCount:"indefinite"},ring); }
+  el("circle",{cx:hx,cy:hy,r:9,fill:"var(--panel)",stroke:"var(--navy)","stroke-width":2.5},svg);
+  el("circle",{cx:hx,cy:hy,r:4,fill:"var(--navy)"},svg);
+  const icon = {
+    sun(g,x,y){
+      const on=isFinite(pv)&&pv>20;
+      if(on){ el("circle",{cx:x+38,cy:y-26,r:7,fill:"var(--sun)"},g);
+        for(let i=0;i<8;i++){ const a=i*Math.PI/4; el("line",{x1:x+38+Math.cos(a)*10,y1:y-26+Math.sin(a)*10,x2:x+38+Math.cos(a)*14,y2:y-26+Math.sin(a)*14,stroke:"var(--sun)","stroke-width":2,"stroke-linecap":"round"},g); } }
+      el("line",{x1:x-26,y1:y+16,x2:x-26,y2:y+28,stroke:"var(--ink-2)","stroke-width":3},g);
+      el("line",{x1:x+22,y1:y+16,x2:x+22,y2:y+28,stroke:"var(--ink-2)","stroke-width":3},g);
+      el("line",{x1:x-34,y1:y+28,x2:x+30,y2:y+28,stroke:"var(--ink-2)","stroke-width":3,"stroke-linecap":"round"},g);
+      const P=[[x-44,y+18],[x+36,y+18],[x+46,y-14],[x-34,y-14]];
+      el("polygon",{points:P.map(p=>p.join(",")).join(" "),fill:"var(--load)",stroke:"var(--panel)","stroke-width":2,"stroke-linejoin":"round"},g);
+      for(let i=1;i<4;i++){ const t=i/4; el("line",{x1:P[0][0]+(P[1][0]-P[0][0])*t,y1:y+18,x2:P[3][0]+(P[2][0]-P[3][0])*t,y2:y-14,stroke:"#fff","stroke-width":1.2,opacity:.55},g); }
+      el("line",{x1:(P[0][0]+P[3][0])/2,y1:y+2,x2:(P[1][0]+P[2][0])/2,y2:y+2,stroke:"#fff","stroke-width":1.2,opacity:.55},g);
+    },
+    home(g,x,y){
+      el("rect",{x:x-30,y:y-6,width:60,height:36,fill:"var(--panel)",stroke:"var(--load)","stroke-width":2.5,rx:2},g);
+      el("polygon",{points:`${x-40},${y-4} ${x},${y-34} ${x+40},${y-4}`,fill:"var(--load)",stroke:"var(--load)","stroke-width":2,"stroke-linejoin":"round"},g);
+      el("rect",{x:x-8,y:y+10,width:16,height:20,fill:"var(--load)",rx:1.5},g);
+      const lit=isFinite(load)&&load>20;
+      el("rect",{x:x+13,y:y+3,width:11,height:10,fill:lit?"var(--sun)":"var(--line)",stroke:"var(--load)","stroke-width":1.5},g);
+      el("rect",{x:x-24,y:y+3,width:11,height:10,fill:lit?"var(--sun)":"var(--line)",stroke:"var(--load)","stroke-width":1.5},g);
+    },
+    batt(g,x,y){
+      const col=!isFinite(soc)?"var(--muted)":soc<30?"var(--crit)":soc<50?"var(--warn)":"var(--sea)";
+      el("rect",{x:x-40,y:y-22,width:74,height:44,rx:7,fill:"var(--panel)",stroke:"var(--ink)","stroke-width":2.5},g);
+      el("rect",{x:x+35,y:y-9,width:7,height:18,rx:2,fill:"var(--ink)"},g);
+      if(isFinite(soc)) el("rect",{x:x-35,y:y-17,width:Math.max(2,64*Math.min(100,soc)/100),height:34,rx:4,fill:col},g);
+      if(isFinite(batt)&&batt<-20) el("path",{d:`M${x+2} ${y-14} L${x-9} ${y+2} L${x-1} ${y+2} L${x-4} ${y+15} L${x+9} ${y-3} L${x+1} ${y-3} Z`,fill:"#fff",stroke:"var(--ink)","stroke-width":1.2,"stroke-linejoin":"round"},g);
+    },
+    grid(g,x,y){
+      const st={stroke:"var(--ink-2)","stroke-width":2.5,"stroke-linecap":"round",fill:"none"};
+      el("path",{d:`M${x-18} ${y+28} L${x-5} ${y-30} L${x+5} ${y-30} L${x+18} ${y+28}`,...st},g);
+      el("path",{d:`M${x-26} ${y-18} L${x+26} ${y-18} M${x-20} ${y-4} L${x+20} ${y-4}`,...st},g);
+      el("path",{d:`M${x-8} ${y-18} L${x+11} ${y+10} M${x+8} ${y-18} L${x-11} ${y+10} M${x-12} ${y+10} L${x+12} ${y+10}`,...st,"stroke-width":1.5},g);
+      [x-26,x+26,x-20,x+20].forEach((cx,i)=>el("circle",{cx,cy:i<2?y-18:y-4,r:2.5,fill:"var(--ink-2)"},g));
+    }
+  };
+  for (const k in info){
+    const n=L.n[k], g=el("g",{},svg), ig=el("g",{transform:`translate(${n.ix} ${n.iy}) scale(.8)`},g);
+    icon[k](ig,0,0);
+    const acc={sun:"var(--sun)",home:"var(--load)",batt:"var(--sea)",grid:"var(--muted)"}[k];
+    const cd={sun:[6,4],home:[268,4],batt:[6,156],grid:[268,156]}[k];
+    const card=el("rect",{x:cd[0],y:cd[1],width:246,height:80,rx:18,style:`fill:color-mix(in srgb, ${acc} 10%, var(--panel));stroke:color-mix(in srgb, ${acc} 45%, var(--line));stroke-width:1.5;filter:drop-shadow(0 3px 7px rgba(20,26,61,.14))`});
+    g.insertBefore(card,g.firstChild);
+    const a=el("text",{x:n.tx,y:n.ty,class:"n-title"},g); a.textContent=info[k].t;
+    if(k==="grid") a.setAttribute("style","font-weight:700;letter-spacing:.2em;fill:var(--ink)");
+    const b=el("text",{x:n.tx,y:n.ty+28,class:"n-val"},g); b.textContent=info[k].v;
+    const c=el("text",{x:n.tx,y:n.ty+46,class:"n-sub"},g); c.textContent=info[k].s; c.setAttribute("style","font-weight:600;fill:var(--ink)");
+    try{ const bb=c.getBBox(); if(bb.width>0){ const pl=el("rect",{x:bb.x-8,y:bb.y-1,width:bb.width+16,height:bb.height+2,rx:(bb.height+2)/2,style:`fill:color-mix(in srgb, ${acc} 20%, transparent);stroke:color-mix(in srgb, ${acc} 55%, transparent);stroke-width:1`}); g.insertBefore(pl,c); } }catch(e){}
+  }
+}
+
+/* ---------- outdoor now ---------- */
+function uvChip(u){ if(!isFinite(u)) return ""; const [c,l]=u<3?["uv-low","Low"]:u<6?["uv-mod","Moderate"]:u<8?["uv-high","High"]:u<11?["uv-high","Very high"]:["uv-high","Extreme"]; return `<span class="chip ${c}">${l}</span>`; }
+function drawWx(){
+  const L=live;
+  const tiles=[
+    ["UV index",`${fmt(num(L.uvi))}`,uvChip(num(L.uvi))],
+    ["Solar radiation",`${fmt(num(L.solarRad))}<small>W/m²</small>`,""],
+    ["Wind gusts",`${fmt(num(L.gust),1)}<small>mph</small>`,""],
+    ["Rain today",`${fmt(num(L.rainToday),2)}<small>in</small>`,`Rate ${fmt(num(L.rainRate),2)} in/hr`],
+    ["Rain this month",`${fmt(num(L.rainMonth),2)}<small>in</small>`,`Week ${fmt(num(L.rainWeek),2)} in`],
+    ["Pressure",`${fmt(num(L.presRel),2)}<small>inHg</small>`,`Dew point ${fmt(num(L.dewOut),0)}°`],
+  ];
+  $("wxGrid").innerHTML = tiles.map(([k,v,s])=>`<div class="t"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s||"&nbsp;"}</div></div>`).join("");
+  $("heroTemp").innerHTML = `${isFinite(num(L.tempOut))?fmt(num(L.tempOut),0):"—"}<sup>°F</sup>`;
+  $("heroFeels").textContent = isFinite(num(L.feels))?fmt(num(L.feels),0)+"°":"—";
+  $("heroHum").textContent = isFinite(num(L.humOut))?fmt(num(L.humOut))+"%":"—";
+  $("heroWind").textContent = isFinite(num(L.wind))?`${fmt(num(L.wind),1)} mph ${String(L.windDir||"").replace(/\s*\(.*\)/,"")}`:"—";
+}
+
+/* ---------- grow conditions ---------- */
+function rainPct(){ const r=report; if(!r||!r.conditions) return NaN; const today=new Date().toLocaleDateString("en-CA",{timeZone:TZ}); if(r.date&&r.date!==today) return NaN; const m=String(r.conditions.rain||"").match(/(\d+)/); return m?+m[1]:NaN; }
+function drawGrow(){
+  const L=live, T=num(L.tempOut), RH=num(L.humOut), rw=num(L.rainWeek);
+  let vpd=NaN; if(isFinite(T)&&isFinite(RH)){ const c=(T-32)*5/9, svp=0.6108*Math.exp(17.27*c/(c+237.3)); vpd=svp*(1-RH/100); }
+  const vpdNote=!isFinite(vpd)?"":vpd<0.4?"Low: fungus risk, keep airflow up":vpd<0.8?"Good for seedlings and clones":vpd<1.2?"Ideal for vegetative growth":vpd<1.6?"OK for fruiting and flowering":"High: plants transpiring hard, stress risk";
+  const heat=!isFinite(T)?["—",""]:T>=90?["Blossom-drop risk","Above 90°F tomato pollen goes sterile. Shade cloth midday, and work the garden before 9 AM or after 4 PM."]:T>=85?["Warm","Near the 90°F tomato pollen limit"]:["OK","Within tomato fruit-set range"];
+  const water=!isFinite(rw)?["—",""]:rw<0.5?["Water from cisterns","Irrigate at dawn to stretch cistern water"]:rw<1?["Top up as needed",""]:["Rain is covering it",""];
+  const rt=num(L.rainToday), rp=rainPct();
+  if(isFinite(rt)&&rt>=0.25) { water[0]="Skip watering"; water[1]=`${fmt(rt,2)} in of rain already today`; }
+  else if(isFinite(rp)&&rp>=60) { water[0]="Hold off, rain likely"; water[1]=`${rp}% rain chance today. Let the cisterns fill instead`; }
+  else if(isFinite(rp)&&rp>=40) { water[0]="Water lightly"; water[1]=`${rp}% rain chance. Check the soil at midday`; }
+  const tiles=[["Leaf VPD",isFinite(vpd)?`${fmt(vpd,2)} <small style="font-size:12px;font-weight:400;color:var(--ink-2)">kPa</small>`:"—",vpdNote],["Tomato heat",heat[0],heat[1]],["Watering",water[0],water[1]]];
+  $("growTiles").innerHTML=tiles.map(([k,v,s])=>`<div class="t"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join("");
+}
+
+/* ---------- daily report (db: report/latest, written each morning) ---------- */
+function statusPill(t){ const s=String(t||""); const cls=/✅|calm|fine|good|excellent|low/i.test(s)?"ok":/⚠|advisory|caution|small craft|moderate/i.test(s)?"warn":/warning|danger|hazard|high surf/i.test(s)?"bad":"ok";
+  return `<span class="pill ${cls}">${esc(s.replace(/✅|⚠️|⚠/g,"").trim()||"—")}</span>`; }
+function cellMark(t){ const s=String(t||""); if(!s||s==="—") return '<td><span style="color:var(--muted)">—</span></td>';
+  const cls=/⚠|rest|avoid|no /i.test(s)?"warn":/❌|unsafe|stay/i.test(s)?"bad":"ok"; return `<td><span class="pill ${cls}">${esc(s.replace(/✅|⚠️|⚠|⭐|❌/g,"").trim())}${/⭐/.test(s)?" ★":""}</span></td>`; }
+const activityName = a => /seedling/i.test(a||"") && /pot/i.test(a||"") ? "Planting" : a;
+function drawReport(){
+  const r=report; drawGrow();
+  if(!r){ $("reportToday").innerHTML='<div class="s">No morning report yet. It is written each day at 6 AM.</div>'; return; }
+  const c=r.conditions||{};
+  $("reportStamp").textContent = "Daily report · "+(r.dateLabel||r.date||"");
+  $("reportToday").innerHTML =
+    `<div class="rep-chips">${[["Heat index",c.heatIndex],["Sky",c.sky]].map(([k,v])=>`<div class="t"><div class="k">${k}</div><div class="v">${esc(v||"—")}</div></div>`).join("")}</div>`+
+    `<div class="rep-sum">${r.advisory?`<span class="pill bad">${esc(r.advisory)}</span>`:'<span class="pill ok">No advisories</span>'}<span>${esc(r.summary||"")}</span></div>`;
+  if(Array.isArray(r.outlook)&&r.outlook.length){
+    $("outlook").innerHTML=`<div class="tbl-wrap"><table class="rt"><thead><tr><th>Day</th><th>High</th><th>Rain</th><th>Wind</th><th>Notes</th></tr></thead><tbody>${
+      r.outlook.map((o,i)=>`<tr class="${i===0?"today":""}"><td>${esc(o.day)}</td><td>${esc(o.high)}</td><td>${esc(o.rain)}</td><td>${esc(o.wind)}</td><td>${esc(o.notes)}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  const m=r.marine;
+  if(m&&Array.isArray(m.periods)){
+    $("marineStamp").textContent=String(m.zone||"Marine forecast").replace(/^AMZ\d+\s*/,"")||"Marine forecast";
+    $("marine").innerHTML=`<div class="tbl-wrap"><table class="rt" style="min-width:380px"><thead><tr><th>Period</th><th>Winds</th><th>Seas</th><th>Status</th></tr></thead><tbody>${
+      m.periods.map(p=>`<tr><td>${esc(p.period)}</td><td>${esc(p.winds)}</td><td>${esc(p.seas)}</td><td>${statusPill(p.status)}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  const w=r.work;
+  if(w&&Array.isArray(w.columns)&&Array.isArray(w.rows)){
+    $("work").innerHTML=`<div class="tbl-wrap"><table class="rt" style="min-width:460px"><thead><tr><th>Activity</th>${w.columns.map(h=>`<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${
+      w.rows.map(row=>`<tr><td>${esc(activityName(row.activity))}</td>${(row.cells||[]).map(cellMark).join("")}</tr>`).join("")}</tbody></table></div>`;
+  }
+}
+
+/* ---------- forecast (fallback when no daily report) ---------- */
+function condIcon(c){
+  c=c.toLowerCase();
+  const sun='<circle cx="13" cy="13" r="5" fill="var(--sun)"/>';
+  const cloud='<path d="M7 19h11a4 4 0 0 0 0-8 5 5 0 0 0-9.6 1.4A3.3 3.3 0 0 0 7 19z" fill="var(--muted)" opacity=".75"/>';
+  const rain='<path d="M9 22l-1 2M13 22l-1 2M17 22l-1 2" stroke="var(--sea)" stroke-width="1.6" stroke-linecap="round"/>';
+  let s = /shower|rain|storm/.test(c) ? `<g transform="translate(0,-3)">${cloud}</g>${rain}` : /partly|mostly sunny/.test(c) ? `<g transform="translate(-3,-4)">${sun}</g>${cloud}` : /cloud/.test(c) ? cloud : sun;
+  return `<svg viewBox="0 0 26 26" aria-hidden="true">${s}</svg>`;
+}
+function drawForecast(){
+  if (!forecast.length || (report && Array.isArray(report.outlook) && report.outlook.length) || !$("forecast")) return;
+  $("forecast").innerHTML = forecast.map(f=>`<div class="fday">
+    <div class="d">${f.day}</div>
+    <div class="c">${condIcon(f.cond)}${f.cond}</div>
+    <div class="hl">${fmt(f.hi)}°<span>${fmt(f.lo)}°</span></div>
+    <div class="meta"><span>Rain ${isFinite(f.rain)?fmt(f.rain)+"%":"—"}</span><span>${f.wind}</span></div>
+    <div class="rainbar" aria-hidden="true"><i style="width:${isFinite(f.rain)?Math.min(100,f.rain):0}%"></i></div>
+    <div class="meta"><span>UV</span><span>${f.uv}</span></div></div>`).join("");
+}
+
+/* ---------- status ---------- */
+function setStatus(kind, text){ $("statusDot").className="dot "+kind; $("statusText").textContent=text; }
+function showBanner(html){ const b=$("banner"); if(!html){b.hidden=true;return;} b.innerHTML=html; b.hidden=false; }
+function handleErr(e, where){
+  const code=e&&e.code;
+  if (["needs_reauth"].includes(code)) { setStatus("err","Drive needs reconnecting"); showBanner("Google Drive’s sign-in has lapsed. Reconnect it in claude.ai Settings → Connectors, then reload."); }
+  else if (["server_not_connected","selection_required"].includes(code)) { setStatus("err","Google Drive not connected"); showBanner("This dashboard reads the Weather Station Dashboard sheet through Google Drive. Add Google Drive in claude.ai Settings → Connectors, then reload."); }
+  else if (["not_in_manifest","not_granted","blocked_by_policy","approval_required"].includes(code)) { setStatus("err","Drive access not allowed"); showBanner("Google Drive access was turned off for this page. Allow it from the page’s permissions, then reload."); }
+  else if (where==="live") { setStatus("stale", lastLiveAt?"Reconnecting, showing last reading":"Drive didn’t respond, retrying"); }
+}
+
+/* ---------- data flow ---------- */
+function applyLive(result){
+  const p = result.payload;
+  const md = typeof p==="string" ? p : (p && (p.fileContent || p.content)) || (result.content||[]).map(c=>c.text||"").join("\n");
+  const parsed = parseSheet(md);
+  live = parsed.vals;
+  if (!Object.keys(live).some(k=>!/Time$/.test(k))) { setStatus("stale","Connected, no readings found"); showBanner("Google Drive answered, but the readings weren’t where this page expects them in the Weather Station Dashboard sheet. If the dashboard tab was rearranged, let Claude know."); return; }
+  if (parsed.forecasts.length){ forecast = parsed.forecasts[parsed.forecasts.length-1]; if (forecast.length<3){ const longest=[...parsed.forecasts].sort((a,b)=>b.length-a.length)[0]; if(longest.length>forecast.length) forecast = parsed.forecasts.find(f=>f===longest); } }
+  lastLiveAt = result.cache ? new Date(result.cache.storedAt) : new Date();
+  setStatus("live","Live · updated "+lastLiveAt.toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"}));
+  showBanner(null);
+  pushBatt(); drawWx(); drawFlow(); drawEta(); drawForecast(); drawGrow();
+}
+
+/* ---------- standalone data (no Claude account needed) ---------- */
+function gviz(sheet, tq){
+  return new Promise((resolve,reject)=>{
+    const cb="gv"+Math.random().toString(36).slice(2), s=document.createElement("script");
+    const done=()=>{ clearTimeout(t); try{ delete window[cb]; }catch(e){ window[cb]=undefined; } s.remove(); };
+    const t=setTimeout(()=>{ done(); reject(new Error("timeout")); },20000);
+    window[cb]=r=>{ done(); r&&r.status==="ok"&&r.table ? resolve(r.table) : reject(new Error("bad response")); };
+    s.onerror=()=>{ done(); reject(new Error("load")); };
+    s.src="https://docs.google.com/spreadsheets/d/"+FILE_ID+"/gviz/tq?sheet="+encodeURIComponent(sheet)+"&headers=0&tqx="+encodeURIComponent("out:json;responseHandler:"+cb)+"&tq="+encodeURIComponent(tq||"select *")+"&_="+Date.now();
+    document.head.appendChild(s);
+  });
+}
+const cellText = c => c==null ? "" : String(c.f!=null ? c.f : (c.v==null ? "" : c.v)).replace(/\|/g,"/").replace(/\n/g," ");
+function tableToMd(t){
+  const rows=(t.rows||[]).map(r=>(r.c||[]).map(cellText));
+  const w=Math.max(0,...rows.map(r=>r.length));
+  const line=r=>"| "+Array.from({length:w},(_,i)=>r[i]||"").join(" | ")+" |";
+  return rows.length ? [line(rows[0]), "| "+Array(w).fill(":-:").join(" | ")+" |", ...rows.slice(1).map(line)].join("\n") : "";
+}
+async function loadSheet(){
+  let lastErr=null;
+  for (const tab of ["public","dashboard"]){
+    try{ const md=tableToMd(await gviz(tab)); if(/battery soc/i.test(md)) return md; }catch(e){ lastErr=e; }
+  }
+  throw lastErr||new Error("no readings");
+}
+async function refreshLive(){
+  try{ applyLive({payload:await loadSheet()}); }
+  catch(e){ setStatus("stale", lastLiveAt?"Reconnecting, showing last reading":"Couldn’t reach the sheet, retrying");
+    if(!lastLiveAt) showBanner("The live readings come from a Google Sheet that must be shared as “Anyone with the link can view”. Retrying every minute."); }
+}
+
+/* ---------- forecast + marine from Open-Meteo (free, no key), replaces the morning report ---------- */
+const WMO={0:"Sunny",1:"Mostly sunny",2:"Partly cloudy",3:"Cloudy",45:"Fog",48:"Fog",51:"Light drizzle",53:"Drizzle",55:"Drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",80:"Showers",81:"Showers likely",82:"Heavy showers",95:"Thunderstorms",96:"Thunderstorms",99:"Thunderstorms"};
+const wmo = c => WMO[c] || (c>=95?"Thunderstorms":c>=80?"Showers":c>=60?"Rain":c>=50?"Drizzle":"Partly cloudy");
+const compass = d => ["N","NE","E","SE","S","SW","W","NW"][Math.round(((d%360)+360)%360/45)%8];
+const dayLabel = (iso,i) => { const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-US",{timeZone:"UTC",weekday:"short",month:"numeric",day:"numeric"}).replace(",","")+(i===0?" (Today)":""); };
+const seaStatus = ft => ft<2.5?"Excellent":ft<4?"Good":ft<6?"⚠️ Caution":"❌ Rough";
+async function loadReport(){
+  const f=await (await fetch("https://api.open-meteo.com/v1/forecast?latitude=18.318&longitude=-64.953&daily=weather_code,temperature_2m_max,apparent_temperature_max,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant&hourly=wind_speed_10m,wind_direction_10m&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=America%2FPuerto_Rico&forecast_days=6")).json();
+  let m=null; try{ m=await (await fetch("https://marine-api.open-meteo.com/v1/marine?latitude=18.27&longitude=-64.95&hourly=wave_height&length_unit=imperial&timezone=America%2FPuerto_Rico&forecast_days=4")).json(); }catch(e){}
+  const d=f.daily, n=d.time.length, out=[];
+  for(let i=0;i<n;i++) out.push({iso:d.time[i],hi:Math.round(d.temperature_2m_max[i]),feel:Math.round(d.apparent_temperature_max[i]),rain:Math.round(d.precipitation_probability_max[i]||0),wind:Math.round(d.wind_speed_10m_max[i]),dir:compass(d.wind_direction_10m_dominant[i]),sky:wmo(d.weather_code[i])});
+  const t0=out[0];
+  const seas=(dayIdx,from,to)=>{ if(!m||!m.hourly) return NaN; let mx=NaN; m.hourly.time.forEach((t,k)=>{ if(t.slice(0,10)!==out[dayIdx].iso) return; const h=+t.slice(11,13); if(h>=from&&h<to&&m.hourly.wave_height[k]!=null) mx=isFinite(mx)?Math.max(mx,m.hourly.wave_height[k]):m.hourly.wave_height[k]; }); return mx; };
+  const windAt=(dayIdx,from,to)=>{ let mx=0; f.hourly.time.forEach((t,k)=>{ if(t.slice(0,10)!==out[dayIdx].iso) return; const h=+t.slice(11,13); if(h>=from&&h<to) mx=Math.max(mx,f.hourly.wind_speed_10m[k]); }); return Math.round(mx*0.87); }; // mph to knots
+  const periods=[]; [["Today",0,6,18],["Tonight",0,18,24],["Tomorrow",1,6,18],["Tomorrow night",1,18,24]].forEach(([name,di,a,b])=>{ if(di>=n) return; const ft=seas(di,a,b); if(!isFinite(ft)) return; periods.push({period:name,winds:"~"+windAt(di,a,b)+" kt",seas:ft.toFixed(1)+" ft",status:seaStatus(ft)}); });
+  const restDay=dt=>{ const e=moonAt(dt).elong; return e<12||e>348||(e>168&&e<192); };
+  const cols=[], rows={paint:[],yard:[],plant:[],ferry:[],beach:[]};
+  for(let i=0;i<Math.min(4,n);i++){
+    const o=out[i], dt=new Date(o.iso+"T16:00:00Z"), mo=moonAt(dt), ft=seas(i,6,18);
+    cols.push(i===0?"Today":new Date(o.iso+"T12:00:00Z").toLocaleDateString("en-US",{timeZone:"UTC",weekday:"short"}));
+    rows.paint.push(o.rain>=50?"❌ Wet":o.rain<30&&o.wind<16?"✅ Good":"⚠️ Risky");
+    rows.yard.push(o.hi>=92?"⚠️ Hot, start early":o.rain>=60?"⚠️ Wet":"✅ Good");
+    rows.plant.push(restDay(dt)?"⚠️ Rest day":o.rain>=70?"⚠️ Wet":(mo.sign[3]==="Leaf"||mo.sign[3]==="Root")?"⭐ "+mo.sign[3]+" day":"✅ "+mo.sign[3]+" day");
+    rows.ferry.push(!isFinite(ft)?"—":ft<5?"✅ Smooth":ft<7?"⚠️ Choppy":"❌ Rough");
+    rows.beach.push(!isFinite(ft)?(o.rain<40?"✅ Good":"⚠️ Showers"):ft>=5?"⚠️ Rip risk":o.rain<40?"✅ Good":"⚠️ Showers");
+  }
+  return { date:new Date().toLocaleDateString("en-CA",{timeZone:TZ}), dateLabel:dayLabel(t0.iso,-1),
+    conditions:{high:t0.hi+"°F",heatIndex:"~"+t0.feel+"°F",sky:t0.sky,wind:t0.dir+" ~"+t0.wind+" mph",rain:t0.rain+"%"}, advisory:null,
+    summary:`${t0.sky}, high near ${t0.hi}°F (feels like ~${t0.feel}°F). ${t0.rain}% chance of rain, wind ${t0.dir} up to ${t0.wind} mph.`,
+    outlook:out.map((o,i)=>({day:dayLabel(o.iso,i),high:o.hi+"°F",rain:o.rain+"%",wind:o.dir+" ~"+o.wind+" mph",notes:o.sky})),
+    marine:{zone:"Waters south of Water Island",periods}, work:{columns:cols,rows:[["Exterior painting","paint"],["Yard / farm work","yard"],["Planting","plant"],["STT ferry","ferry"],["Beaches","beach"]].map(([a,k])=>({activity:a,cells:rows[k]}))} };
+}
+async function refreshReport(){
+  try{ report=await loadReport(); drawReport(); drawForecast(); }
+  catch(e){ if(!report){ $("reportToday").innerHTML='<div class="s">Forecast unavailable right now. Retrying.</div>'; } }
+}
+
+async function boot(){
+  tickClock(); setInterval(tickClock,1000);
+  drawSun(); drawSea(); drawMoon(); drawWx(); drawFlow(); drawEta(); drawGrow();
+  $("reportToday").innerHTML='<div class="s">Loading the forecast…</div>';
+  setInterval(()=>{ drawSun(); drawSea(); drawMoon(); drawEta(); },60000);
+  if (window.ResizeObserver) new ResizeObserver(()=>{ const n=true; if(n!==flowNarrow) drawFlow(); }).observe($("flowbar"));
+  refreshLive(); setInterval(refreshLive,60000);
+  refreshReport(); setInterval(refreshReport,3*3600000);
+}
+boot();
+})();
+</script>
+
