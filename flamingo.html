@@ -281,9 +281,10 @@ footer .tag{font-family:var(--display);font-size:20px;color:var(--navy);letter-s
 const FILE_ID = "19UjE7JSRZ-b5RCLcynscgHgfhijskhF6h6ZVzOk0S60";
 const SERVER = "Google Drive"; const WX_FILE_ID = "195ANkJGeUheFv91LdpOJUMpTxSLjjA50t1Quo3qQdiE";
 const LAT = 18.318, LON = -64.953, TZ = "America/St_Thomas";
-/* Battery size used for the 100% / 12% time. About 22 kWh, worked out from the April 2026
-   inverter log (charge and discharge both land between 21 and 24 kWh per 100%). Edit if the real figure differs. */
-const BATT_KWH = 10.56, BATT_FLOOR = 12;
+/* Battery size for the 100% / 22% time. Estimated at about 28 kWh from the Sept 24 2026 morning charge in the Blue Flamingo log
+   (20% -> 40% while roughly 6 kWh of net solar came in; range 27-30 kWh). Blue Flamingo shuts off at 20%, so the floor is 22%. Edit if the real figure differs. */
+const BATT_KWH = 28, BATT_FLOOR = 22;
+const CV_SOC = 90; /* charging slows (taper) above this SOC; the last 10% is estimated at a falling rate (assumption, not measured) */
 const $ = id => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 let live = {}, forecast = [], lastLiveAt = null, report = null;
@@ -485,6 +486,11 @@ function battPower(){ // watts, + = discharging, − = charging; blends recent r
   const prev=battSamples.slice(0,-1).reduce((a,b)=>a+b.v,0)/(battSamples.length-1);
   return Math.sign(prev)!==Math.sign(last) ? last : 0.6*last+0.4*prev;
 }
+function chargeSim(soc,pw,limitH){ // hours to 100% at pw watts, with taper above CV_SOC; h=null if not reached within limitH (soc = expected level then)
+  let s=soc,t=0; const dt=0.02;
+  while(s<99.5){ const r=pw/1000*(s<CV_SOC?1:Math.max(0.3,(100-s)/(100-CV_SOC))); s+=r*dt/BATT_KWH*100; t+=dt; if(t>=limitH) return {h:null,soc:Math.min(100,s)}; }
+  return {h:t,soc:100};
+}
 function drawEta(){ drawEta0(); drawAlert(); }
 function drawEta0(){
   const soc=num(live.soc), p=battPower(), lab=$("etaLabel"), tm=$("etaTime"), sb=$("etaSub");
@@ -493,9 +499,15 @@ function drawEta0(){
   const pill=(cls,t)=>`<span class="pill ${cls}">${t}</span>`;
   if(p<-20){
     if(soc>=100){ lab.textContent="Battery"; tm.textContent="Full"; sb.innerHTML=pill("ok","100%")+`<span>${kw(-p)} still coming in</span>`; return; }
-    const h=(100-soc)/100*BATT_KWH/(-p/1000), late=stNow()+h>sunTimes(now).set;
-    lab.textContent="Battery reaches 100%"; tm.textContent=when(h);
-    sb.innerHTML=pill("ok","Charging")+`<span>in ${durTxt(h)} · ${kw(-p)}${late?" · after sunset":""}</span>`;
+    const sun=sunTimes(now), left=sun.set-stNow(), limit=(left>0.25 && stNow()>=sun.rise)?left:48; // daylight left; no limit if charging from grid at night
+    const sim=chargeSim(soc,-p,limit);
+    if(sim.h!==null){
+      lab.textContent="Battery reaches 100%"; tm.textContent=when(sim.h);
+      sb.innerHTML=pill("ok","Charging")+`<span>in ${durTxt(sim.h)} · ${kw(-p)} · slows near full</span>`;
+    } else {
+      lab.textContent="Battery at sunset"; tm.textContent=`about ${fmt(sim.soc)}%`;
+      sb.innerHTML=pill("warn","Charging")+`<span>won't reach 100% before sunset at ${kw(-p)}</span>`;
+    }
   } else if(p>20){
     if(soc<=BATT_FLOOR){ lab.textContent=`Battery at ${BATT_FLOOR}%`; tm.textContent="Now"; sb.innerHTML=pill("bad","Low")+`<span>${fmt(soc)}% · drawing ${kw(p)}</span>`; return; }
     const h=(soc-BATT_FLOOR)/100*BATT_KWH/(p/1000);
